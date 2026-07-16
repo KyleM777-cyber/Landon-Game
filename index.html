@@ -192,6 +192,7 @@ const treeCanopyImg=new Image();treeCanopyImg.src="images/tiles/tree-canopy.png"
 const rockSpriteImg=new Image();rockSpriteImg.src="images/tiles/rock.png";
 const logSpriteImg=new Image();logSpriteImg.src="images/tiles/log.png";
 const houseSpriteImg=new Image();houseSpriteImg.src="images/tiles/house.png";
+const fenceSpriteImg=new Image();fenceSpriteImg.src="images/tiles/fence.png";
 const pathTileImg=new Image();pathTileImg.src="images/tiles/path.png";
 let pathPattern=null;
 pathTileImg.onload=()=>{pathPattern=X.createPattern(pathTileImg,"repeat")};
@@ -1485,7 +1486,19 @@ function drawObstacles(layer){
       }
     }
     else if(o.type==="porch"||o.type==="bridge"){X.fillStyle="#8c623e";X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle="#3d2a1d";for(let x=o.x+8;x<o.x+o.w;x+=18){X.beginPath();X.moveTo(x,o.y);X.lineTo(x,o.y+o.h);X.stroke()}}
-    else if(o.type==="fence"){X.fillStyle="#7a5030";X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle="#c38a54";X.strokeRect(o.x,o.y,o.w,o.h)}
+    else if(o.type==="fence"){
+      if(level===1&&fenceSpriteImg.complete&&fenceSpriteImg.naturalWidth){
+        const fw=48,fh=fw*(fenceSpriteImg.naturalHeight/fenceSpriteImg.naturalWidth);
+        const cy=o.y+o.h/2;
+        X.save();X.beginPath();X.rect(o.x,o.y-20,o.w,o.h+40);X.clip();
+        X.imageSmoothingEnabled=false;
+        for(let x=o.x;x<o.x+o.w;x+=fw)X.drawImage(fenceSpriteImg,x,cy-fh/2,fw,fh);
+        X.imageSmoothingEnabled=true;
+        X.restore();
+      }else{
+        X.fillStyle="#7a5030";X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle="#c38a54";X.strokeRect(o.x,o.y,o.w,o.h)
+      }
+    }
     else if(o.type==="fort"){X.fillStyle="#574630";X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle="#97845a";X.lineWidth=4;for(let x=o.x;x<o.x+o.w;x+=18){X.beginPath();X.moveTo(x,o.y);X.lineTo(x,o.y+o.h);X.stroke()}}
     else if(o.type==="fortressGate"){
       const pulse=.5+.5*Math.sin(time*5);
