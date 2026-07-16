@@ -203,7 +203,8 @@ let hudPrev={hp:5,ammo:0,score:0,coins:0};
    COINS, UPGRADES & WEAPONS (persistent meta-progression)
    ========================================================= */
 const BASE_MAX_AMMO=30,BASE_MAX_ROCKET_AMMO=6;
-let coins=0,rocketAmmo=0,activeWeapon="gun";
+const STARTING_COINS=0;
+let coins=STARTING_COINS,rocketAmmo=0,activeWeapon="gun";
 let upgrades={shield:false,bandolier:false,bat:false,rocket:false};
 const STORE_ITEMS=[
   {key:"shield",name:"Bayou Shield",price:15,desc:"Blocks stones, veggies, and jars thrown at Landon's front."},
@@ -251,8 +252,8 @@ testMode=!!save.testMode;
 // it now just follows the OS-level accessibility preference automatically.
 reduced=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 document.body.classList.toggle("reduceMotion",reduced);
-$("saveInfo").textContent=`High Score: ${save.highScore||0} · Furthest Level: ${save.furthest||1} · Coins: ${save.coins||0}`;
-coins=save.coins||0;
+$("saveInfo").textContent=`High Score: ${save.highScore||0} · Furthest Level: ${save.furthest||1} · Coins: ${typeof save.coins==="number"?save.coins:STARTING_COINS}`;
+coins=typeof save.coins==="number"?save.coins:STARTING_COINS;
 rocketAmmo=save.rocketAmmo||0;
 upgrades={shield:false,bandolier:false,bat:false,rocket:false,...(save.upgrades||{})};
 
@@ -374,7 +375,7 @@ $("restartBtn").onclick=restartLevel;
 $("retryBtn").onclick=restartLevel;
 $("againBtn").onclick=newGame;
 ["titleBtn1","titleBtn2","titleBtn3"].forEach(id=>$(id).onclick=returnTitle);
-$("clearBtn").onclick=()=>{storageRemove("landonGumboSave");save={};coins=0;rocketAmmo=0;upgrades={shield:false,bandolier:false,bat:false,rocket:false};activeWeapon="gun";applyUpgrades();$("saveInfo").textContent="Save cleared";};
+$("clearBtn").onclick=()=>{storageRemove("landonGumboSave");save={};coins=STARTING_COINS;rocketAmmo=0;upgrades={shield:false,bandolier:false,bat:false,rocket:false};activeWeapon="gun";applyUpgrades();$("saveInfo").textContent="Save cleared";};
 $("soundToggle").onchange=e=>{soundOn=e.target.checked;savePrefs()};
 $("testModeToggle").onchange=e=>{testMode=e.target.checked;savePrefs()};
 
@@ -425,7 +426,7 @@ function rect(x,y,w,h,type="wall",solid=true,layer=0){const o={x,y,w,h,type,soli
 function deco(x,y,type,s=1,layer=0){decor.push({x,y,type,s,layer,phase:rnd(0,TAU)})}
 function addGate(x,y,w,h,id){const g={x,y,w,h,id,open:false};gates.push(g);return g}
 function addSwitch(x,y,id){switches.push({x,y,r:18,id,on:false})}
-function addPickup(x,y,type){pickups.push({x,y,r:12,type,bob:rnd(0,TAU),life:99})}
+function addPickup(x,y,type,value=1){pickups.push({x,y,r:12,type,value,bob:rnd(0,TAU),life:99})}
 function spawn(type,x,y){
   const base={grunt:{hp:2,s:72,r:14},slinger:{hp:3,s:58,r:14},bomber:{hp:4,s:48,r:15},shield:{hp:5,s:45,r:16},reveler:{hp:3,s:80,r:14}};
   const b=base[type];
@@ -953,8 +954,9 @@ function collectPickups(){
     if(p.type==="spoon")player.spoon=6;
     if(p.type==="key"){fortressKey=true;score+=500;msg("Fortress key acquired! Return to the eastern gate.",3)}
     if(p.type==="rocket"){rocketAmmo=Math.min(BASE_MAX_ROCKET_AMMO,rocketAmmo+2);saveMeta()}
-    if(p.type==="coin"){
-      coins++;beep("coin");addParticles(p.x,p.y,"#ffe14a",14,"star");saveMeta();
+    if(p.type==="coin"||p.type==="gem"){
+      coins+=p.value||1;beep("coin");
+      addParticles(p.x,p.y,p.type==="gem"?(p.value>=3?"#e04fe0":"#3fd6e8"):"#ffe14a",14,"star");saveMeta();
     }else{beep("pickup");addParticles(p.x,p.y,"#ffd65e",12);}
     updateHud()
   }
@@ -1034,7 +1036,7 @@ function hurtEnemy(e,damage,shot){
   e.hp-=damage;e.stun=.08;e.flashT=.1;addParticles(e.x,e.y,"#a7ff78",7);addDamageNumber(e.x,e.y-e.r-6,damage,"#c9ffb0");
   for(const o of enemies){if(o!==e&&!o.dead&&o.alertT<=0&&dist(o,e)<130)o.alertT=.4}
   if(e.hp<=0&&!e.dead){e.dead=true;score+=e.type==="grunt"?100:200;beep("enemy");addParticles(e.x,e.y,"#d5ff74",18,"star");addParticles(e.x,e.y,"#cfd8cf",7,"smoke");
-    if(!e.coinDropped){e.coinDropped=true;addPickup(e.x,e.y,"coin")}
+    if(!e.coinDropped){e.coinDropped=true;const val=Math.floor(Math.random()*3)+1;addPickup(e.x,e.y,val>1?"gem":"coin",val)}
     if(e.dropsKey&&!keyDropped){
       keyDropped=true;
       const kx=Math.min(e.x,700),ky=clamp(e.y,145,395);
@@ -1877,6 +1879,16 @@ function drawPickups(){
       X.fillStyle="#fff3b0";X.font="bold 11px Arial";X.textAlign="center";X.fillText("$",0,4);
       const glint=.5+.5*Math.sin(time*6+p.bob);
       X.fillStyle=`rgba(255,255,255,${glint*.6})`;X.beginPath();X.arc(-3,-4,2.4,0,TAU);X.fill();
+    }
+    if(p.type==="gem"){
+      const rare=p.value>=3;const s=rare?13:11;
+      X.fillStyle=rare?"#e04fe0":"#3fd6e8";X.strokeStyle=rare?"#7a1f7a":"#0f6b78";X.lineWidth=2.5;
+      X.beginPath();X.moveTo(0,-s);X.lineTo(s*.75,-s*.15);X.lineTo(s*.45,s*.85);X.lineTo(-s*.45,s*.85);X.lineTo(-s*.75,-s*.15);X.closePath();
+      X.fill();X.stroke();
+      X.strokeStyle="rgba(255,255,255,.5)";X.lineWidth=1.2;
+      X.beginPath();X.moveTo(0,-s);X.lineTo(0,s*.85);X.stroke();
+      const glint=.5+.5*Math.sin(time*6+p.bob);
+      X.fillStyle=`rgba(255,255,255,${glint*.7})`;X.beginPath();X.arc(-s*.25,-s*.3,2,0,TAU);X.fill();
     }
   X.restore()}
 }
