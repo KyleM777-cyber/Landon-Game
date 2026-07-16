@@ -427,7 +427,7 @@ function addGate(x,y,w,h,id){const g={x,y,w,h,id,open:false};gates.push(g);retur
 function addSwitch(x,y,id){switches.push({x,y,r:18,id,on:false})}
 function addPickup(x,y,type){pickups.push({x,y,r:12,type,bob:rnd(0,TAU),life:99})}
 function spawn(type,x,y){
-  const base={grunt:{hp:2,s:72,r:14},slinger:{hp:3,s:58,r:14},bomber:{hp:4,s:48,r:15},shield:{hp:5,s:45,r:16},reveler:{hp:3,s:80,r:14}};
+  const base={grunt:{hp:2,s:72,r:14},slinger:{hp:3,s:58,r:14},bomber:{hp:4,s:48,r:15},shield:{hp:5,s:45,r:16},reveler:{hp:3,s:80,r:14},pounder:{hp:5,s:50,r:17}};
   const b=base[type];
   // Move any invalid spawn point to the nearest open location.
   if(solidAt(x,y,b.r)){
@@ -617,25 +617,25 @@ function spawnMardiWave(kind){
   const arenaMid=[{x:430,y:170},{x:430,y:370},{x:530,y:170},{x:530,y:370}];
   const arenaRight=[{x:760,y:170},{x:760,y:370},{x:820,y:270}];
   if(kind==="ambush"){
-    const n=Math.ceil(3*diff.count);
+    const n=Math.ceil(6*diff.count);
     for(let i=0;i<n;i++){const p=arenaLeft[i%arenaLeft.length];spawn("grunt",p.x+rnd(-15,15),p.y+rnd(-15,15));}
     msg("Goblins spill out of the alleys!",2.2);
   }else if(kind==="ranged"){
     const spots=[{x:300,y:170},{x:560,y:370},{x:650,y:170},{x:210,y:370}];
-    const n=Math.ceil(3*diff.count);
+    const n=Math.ceil(6*diff.count);
     for(let i=0;i<n;i++){const p=spots[i%spots.length];spawn(i%2===0?"slinger":"reveler",p.x,p.y);}
     msg("Ranged goblins take cover by the floats!",2.2);
   }else if(kind==="shield"){
-    const n=Math.ceil(2*diff.count);
-    for(let i=0;i<n;i++){const p=arenaMid[i%arenaMid.length];spawn("shield",p.x+rnd(-10,10),p.y+rnd(-10,10));}
-    msg("Shield goblins advance!",2.2);
+    const n=Math.ceil(4*diff.count);
+    for(let i=0;i<n;i++){const p=arenaMid[i%arenaMid.length];spawn(i%2===0?"shield":"pounder",p.x+rnd(-10,10),p.y+rnd(-10,10));}
+    msg("Shield goblins advance with ground-pounders in tow!",2.2);
   }else if(kind==="bomber"){
-    const n=Math.ceil(2*diff.count);
-    for(let i=0;i<n;i++){const p=arenaMid[(i+1)%arenaMid.length];spawn("bomber",p.x+rnd(-10,10),p.y+rnd(-10,10));}
-    msg("Bomber goblins try to flush you out!",2.2);
+    const n=Math.ceil(4*diff.count);
+    for(let i=0;i<n;i++){const p=arenaMid[(i+1)%arenaMid.length];spawn(i%2===0?"bomber":"pounder",p.x+rnd(-10,10),p.y+rnd(-10,10));}
+    msg("Bombers and ground-pounders try to flush you out!",2.2);
   }else if(kind==="final"){
-    const types=["grunt","grunt","slinger","shield","bomber","reveler"];
-    const n=Math.ceil(types.length*diff.count);
+    const types=["grunt","grunt","slinger","shield","bomber","reveler","pounder","pounder"];
+    const n=Math.ceil(12*diff.count);
     for(let i=0;i<n;i++){const p=arenaRight[i%arenaRight.length];spawn(types[i%types.length],p.x+rnd(-15,15),p.y+rnd(-15,15));}
     msg("The final horde blocks the route east!",2.5);
   }
@@ -1020,6 +1020,9 @@ function updateEnemies(dt){
         else moveEntity(e,e.jitterX/jl*e.speed*.6*dt,e.jitterY/jl*e.speed*.6*dt,e.r);
         if(e.cooldown<=0&&d<300){e.cooldown=2.2/diff.rate;e.danceT=rnd(.6,1.1);enemyShot(e,190,"#c76bd9",7)}
       }
+    }else if(e.type==="pounder"){
+      if(d>115)moveEntity(e,e.faceX*e.speed*dt,e.faceY*e.speed*dt,e.r);
+      else if(e.cooldown<=0){e.cooldown=2.5/diff.rate;warnings.push({x:e.x,y:e.y,r:62,t:.7,kind:"slam"});}
     }
   }
   enemies=enemies.filter(e=>!e.dead)
@@ -1753,7 +1756,7 @@ function drawPlayer(){
 }function drawEnemy(e){
   X.fillStyle="rgba(0,0,0,.28)";X.beginPath();X.ellipse(e.x,e.y+e.r*.8,e.r*.9,e.r*.32,0,0,TAU);X.fill();
   const{flip}=facingOf(e.faceX,e.faceY);
-  const col=e.type==="grunt"?"#6aaa3a":e.type==="slinger"?"#7d9f35":e.type==="bomber"?"#8a6b39":e.type==="reveler"?"#8a4fae":"#4f8d5b";
+  const col=e.type==="grunt"?"#6aaa3a":e.type==="slinger"?"#7d9f35":e.type==="bomber"?"#8a6b39":e.type==="reveler"?"#8a4fae":e.type==="pounder"?"#7a5238":"#4f8d5b";
   const w=e.r*1.7,h=e.r*1.55;
   X.save();X.translate(Math.round(e.x),Math.round(e.y));if(flip)X.scale(-1,1);
   X.fillStyle="#d6e76b";
@@ -1781,7 +1784,12 @@ function drawPlayer(){
     X.fillStyle="#e85fae";for(let i=0;i<3;i++){X.beginPath();X.moveTo(-w*.3+i*w*.3,-h*.62);X.lineTo(-w*.3+i*w*.3-4,-h*.85);X.lineTo(-w*.3+i*w*.3+4,-h*.85);X.closePath();X.fill()}
     X.strokeStyle="#ffd84a";X.lineWidth=3;X.beginPath();X.arc(0,-h*.1,w*.38,.15,Math.PI-.15);X.stroke();
   }
-  if(e.festive&&(e.type==="grunt"||e.type==="slinger"||e.type==="bomber"||e.type==="shield")){
+  if(e.type==="pounder"){
+    X.fillStyle="#5a3d22";X.fillRect(w*.28,-h*.95,7,h*.55);
+    X.fillStyle="#8a6b45";X.beginPath();X.ellipse(w*.32,-h*.98,11,9,.3,0,TAU);X.fill();
+    X.strokeStyle="#3d2a15";X.lineWidth=1.5;X.stroke();
+  }
+  if(e.festive&&(e.type==="grunt"||e.type==="slinger"||e.type==="bomber"||e.type==="shield"||e.type==="pounder")){
     // Chest bandana sits in the neutral gap between eyes and mustache so it never masks the face.
     X.fillStyle=e.festiveColor;X.fillRect(-w*.16,0,w*.32,h*.08);
     X.strokeStyle="#ffd84a";X.lineWidth=1.5;X.strokeRect(-w*.16,0,w*.32,h*.08);
@@ -1813,7 +1821,8 @@ function drawBoss(){
   X.fillStyle="#c9a839";X.fillRect(-16,-51,7,9);X.fillRect(-4,-54,8,12);X.fillRect(9,-51,7,9);
   X.fillStyle="#e8c94a";X.fillRect(-17,-45,34,11);
   X.fillStyle="#7ee0ff";X.fillRect(-4,-52,8,6);
-  X.fillStyle="#fff";X.fillRect(6,-19,13,10);X.fillStyle="#211713";X.fillRect(13,-16,4,4);
+  X.fillStyle="#fff";X.fillRect(6,-19,13,10);X.fillRect(-19,-19,13,10);
+  X.fillStyle="#211713";X.fillRect(13,-16,4,4);X.fillRect(-17,-16,4,4);
   X.fillStyle="#7b3023";X.fillRect(-16,3,32,15);
   X.fillStyle="#e8e4d8";X.fillRect(-12,3,6,7);X.fillRect(-2,3,6,7);X.fillRect(8,3,6,7);
   if(boss.flashT>0){X.globalAlpha=clamp(boss.flashT/.1,0,1)*.7;X.fillStyle="#fff";X.fillRect(-38,-30,76,58);X.globalAlpha=1}
