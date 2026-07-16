@@ -43,8 +43,8 @@ button:active{transform:translateY(2px);box-shadow:0 2px #2c4728}
 /* ---- Dialogue scene: full-screen dim + two-shot portraits + bottom text panel ---- */
 #dialogue{position:absolute;inset:0;z-index:12;pointer-events:none;animation:dialogueIn .25s ease-out}
 #dialogueDim{position:absolute;inset:0;background:rgba(4,7,6,.62)}
-#dialoguePortraits{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:space-between;padding:0 1.5vw}
-.dpSlot{position:relative;height:78%;width:44%;display:flex;align-items:flex-end;justify-content:center;transition:transform .4s cubic-bezier(.22,.8,.25,1),filter .4s ease,opacity .4s ease;transform-origin:bottom center;filter:brightness(.5) saturate(.55);opacity:.8;z-index:2}
+#dialoguePortraits{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:space-between;padding:0 1.5vw 12%}
+.dpSlot{position:relative;height:86%;width:46%;display:flex;align-items:flex-end;justify-content:center;transition:transform .4s cubic-bezier(.22,.8,.25,1),filter .4s ease,opacity .4s ease;transform-origin:bottom center;filter:brightness(.5) saturate(.55);opacity:.8;z-index:2}
 .dpSlot.dpEmpty{display:none}
 .dpSlot.dpActive{filter:brightness(1) saturate(1.12);opacity:1;z-index:3}
 .dpSlot.dpInactive{z-index:2}
@@ -52,13 +52,17 @@ button:active{transform:translateY(2px);box-shadow:0 2px #2c4728}
 #dpSlotLeft.dpInactive{transform:scale(.82) translateX(-3%)}
 #dpSlotRight.dpActive{transform:scale(1.1) translateX(-4%)}
 #dpSlotRight.dpInactive{transform:scale(.82) translateX(3%)}
-.dpImg{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(8px 14px 10px rgba(0,0,0,.4))}
+/* width/height:100% (not max-width/max-height) so portraits whose source
+   image is smaller than their slot still scale UP to fill it -- that was
+   why some characters rendered tiny at their native resolution instead of
+   filling the box. object-fit:contain keeps the scale-up distortion-free. */
+.dpImg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(8px 14px 10px rgba(0,0,0,.4))}
 #dialogueBox{position:absolute;left:5%;right:5%;bottom:3%;min-height:130px;background:linear-gradient(100deg,rgba(35,24,24,.98),rgba(255,241,191,.98) 30%);color:#3c2519;border:5px solid #d5a55f;border-radius:18px;padding:14px 20px;box-shadow:0 10px 0 rgba(0,0,0,.4),0 0 22px rgba(255,205,105,.22);font-size:clamp(14px,2vw,20px);z-index:4}
 #dialogueBox strong{color:#8b2f29;font-size:1.18em;letter-spacing:.02em}
 #dialogueText{min-height:60px;text-align:left;display:block}
 #dialoguePrompt{display:block;margin-top:8px;font-size:.72em;font-weight:bold;opacity:.7;text-align:right}
 @keyframes dialogueIn{from{opacity:0}to{opacity:1}}
-@media(max-width:650px){#dialogueBox{left:2%;right:2%;padding:10px 14px;min-height:96px}.dpSlot{height:60%}}
+@media(max-width:650px){#dialogueBox{left:2%;right:2%;padding:10px 14px;min-height:96px}.dpSlot{height:68%}}
 @media(prefers-reduced-motion:reduce){.dpSlot{transition:none}}
 body.reduceMotion .dpSlot{transition:none}
 #message{position:absolute;top:18%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);border:2px solid #fff1a8;border-radius:10px;padding:8px 14px;z-index:8;font-weight:bold;opacity:0;transition:opacity .2s;pointer-events:none}
