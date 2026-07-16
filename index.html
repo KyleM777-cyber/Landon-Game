@@ -57,12 +57,12 @@ button:active{transform:translateY(2px);box-shadow:0 2px #2c4728}
    why some characters rendered tiny at their native resolution instead of
    filling the box. object-fit:contain keeps the scale-up distortion-free. */
 .dpImg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(8px 14px 10px rgba(0,0,0,.4))}
-#dialogueBox{position:absolute;left:5%;right:5%;bottom:3%;min-height:130px;background:linear-gradient(100deg,rgba(35,24,24,.98),rgba(255,241,191,.98) 30%);color:#3c2519;border:5px solid #d5a55f;border-radius:18px;padding:14px 20px;box-shadow:0 10px 0 rgba(0,0,0,.4),0 0 22px rgba(255,205,105,.22);font-size:clamp(14px,2vw,20px);z-index:4}
+#dialogueBox{position:absolute;left:5%;right:5%;bottom:3%;min-height:200px;background:linear-gradient(100deg,rgba(35,24,24,.98),rgba(255,241,191,.98) 30%);color:#3c2519;border:5px solid #d5a55f;border-radius:18px;padding:14px 20px;box-shadow:0 10px 0 rgba(0,0,0,.4),0 0 22px rgba(255,205,105,.22);font-size:clamp(28px,4vw,40px);z-index:4}
 #dialogueBox strong{color:#8b2f29;font-size:1.18em;letter-spacing:.02em}
-#dialogueText{min-height:60px;text-align:left;display:block}
+#dialogueText{min-height:120px;text-align:left;display:block}
 #dialoguePrompt{display:block;margin-top:8px;font-size:.72em;font-weight:bold;opacity:.7;text-align:right}
 @keyframes dialogueIn{from{opacity:0}to{opacity:1}}
-@media(max-width:650px){#dialogueBox{left:2%;right:2%;padding:10px 14px;min-height:96px}.dpSlot{height:68%}}
+@media(max-width:650px){#dialogueBox{left:2%;right:2%;padding:10px 14px;min-height:160px}.dpSlot{height:68%}}
 @media(prefers-reduced-motion:reduce){.dpSlot{transition:none}}
 body.reduceMotion .dpSlot{transition:none}
 #message{position:absolute;top:18%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);border:2px solid #fff1a8;border-radius:10px;padding:8px 14px;z-index:8;font-weight:bold;opacity:0;transition:opacity .2s;pointer-events:none}
