@@ -281,7 +281,7 @@ function beep(type="pickup",vol=.08){
   const map={fire:[420,120,.07,"square"],dash:[180,420,.12,"sawtooth"],hurt:[130,65,.18,"square"],
   pickup:[600,900,.12,"sine"],enemy:[180,70,.18,"triangle"],dialogue:[330,390,.05,"sine"],
   boss:[90,45,.3,"sawtooth"],level:[440,880,.45,"triangle"],victory:[523,1046,.8,"sine"],
-  type:[540,540,.018,"square"],coin:[880,1400,.09,"sine"],block:[700,260,.08,"square"],
+  type:[540,540,.018,"square"],coin:[880,1400,.09,"sine"],gem:[660,1760,.14,"sine"],block:[700,260,.08,"square"],
   boom:[110,30,.35,"sawtooth"],rocket:[220,90,.22,"sawtooth"]}[type]||[300,500,.1,"sine"];
   o.type=map[3];o.frequency.setValueAtTime(map[0],n);o.frequency.exponentialRampToValueAtTime(Math.max(20,map[1]),n+map[2]);
   g.gain.setValueAtTime(vol,n);g.gain.exponentialRampToValueAtTime(.001,n+map[2]);o.connect(g).connect(audioCtx.destination);o.start();o.stop(n+map[2]);
@@ -336,6 +336,9 @@ const player={
   x:150,y:360,r:13,dirX:1,dirY:0,hp:5,maxHp:5,ammo:0,maxAmmo:30,speed:170,
   cooldown:0,dash:0,dashCd:0,inv:0,recoil:0,hot:0,spoon:0,weapon:false,walking:0,interactAnim:0,celebrate:0,sword:0,swordCd:0,dustT:0,rocketCooldown:0
 };
+// Landon's invincible pet warthog. Purely cosmetic/helper -- nothing in the
+// game ever damages it, and it auto-collects coins/gems within its notice radius.
+const pet={x:120,y:378,r:10,faceX:-1,faceY:0,walk:0,target:null};
 applyUpgrades();
 
 /* =========================================================
@@ -450,6 +453,7 @@ function loadLevel(n,cp=null){
   player.hot=0;player.spoon=0;transition=1;fade=1;fadeTarget=0;$("bossWrap").style.display="none";
   if(n===1)buildLevel1();else if(n===2)buildLevel2();else if(n===3)buildLevel3();else if(n===4)buildLevel4();else buildLevel5();
   if(cp){player.x=cp.x;player.y=cp.y}
+  pet.x=player.x-28;pet.y=player.y+16;pet.target=null;pet.walk=0;
   updateHud();savePrefs();saveMeta();
 }
 function buildLevel1(){
@@ -499,8 +503,10 @@ function buildLevel1(){
     ["Grandfather","Landon, the goblins took the family gumbo."],
     ["Landon","They took the whole bowl?"],
     ["Grandfather","Every last drop."],
-    ["Grandfather","Take my trusty Glock. Bring the gumbo home."]
-  ],()=>{weapon=true;player.weapon=true;player.ammo=24;tutorial=1;beep("pickup");msg("Weapon acquired! Move to the open training yard.");updateHud()});
+    ["Grandfather","Take my trusty Glock. Bring the gumbo home."],
+    ["Grandfather","And take Tusk. That warthog's too stubborn to die — he'll root up every coin and gem you pass so you don't have to stop."],
+    ["Landon","Come on, Tusk. Let's go get grandpa's gumbo back."]
+  ],()=>{weapon=true;player.weapon=true;player.ammo=24;tutorial=1;beep("pickup");msg("Weapon acquired! Tusk will fetch coins and gems for you. Move to the open training yard.");updateHud()});
 }
 function buildLevel2(){
   player.x=80;player.y=270;weapon=true;player.weapon=true;borderWorld();
@@ -519,7 +525,7 @@ function buildLevel2(){
   deco(500,270,"cart",1);
   deco(600,390,"frog",1);
   addBird(60,50);addBird(500,30);
-  addPickup(460,390,"ammo");addPickup(570,130,"cornbread");
+  addPickup(460,390,"ammo");addPickup(570,130,"cornbread");addPickup(525,145,"gem");addPickup(245,345,"gem");
   const safeSpawns=[
     {x:245,y:265},{x:455,y:250},{x:545,y:275},
     {x:575,y:390},{x:245,y:345},{x:525,y:145},
@@ -576,6 +582,7 @@ function buildHarborInterior(){
   deco(700,150,"wheel",1.4);deco(250,420,"trap",1.2);deco(720,410,"trap",1);
   deco(300,150,"fishcrate",1.2);deco(650,150,"fishcrate",1);deco(230,250,"lantern",1);deco(730,250,"lantern",1);
   deco(150,300,"rope",1.2);deco(820,300,"rope",1.2);
+  addPickup(600,270,"gem");
   checkpoint={x:70,y:270,hp:player.hp,ammo:player.ammo};
   msg("Press E to speak with Captain Kyle.",3);
 }
@@ -606,7 +613,7 @@ function buildLevel4(){
   for(let i=0;i<9;i++)deco(70+i*100,90,"crowd",1);
   for(let i=0;i<9;i++)deco(70+i*100,480,"crowd",1);
   addBird(120,150);addBird(500,140);addBird(820,160);
-  addPickup(180,270,"cornbread");addPickup(760,270,"ammo");addPickup(480,395,"cornbread");addPickup(480,145,"ammo");
+  addPickup(180,270,"cornbread");addPickup(760,270,"ammo");addPickup(480,395,"cornbread");addPickup(480,145,"ammo");addPickup(530,170,"gem");
   if(upgrades.rocket)addPickup(475,270,"rocket");
   const mardiExit=addGate(915,110,30,320,"mardiExit");
   checkpoint={x:180,y:270,hp:player.hp,ammo:player.ammo};
@@ -662,7 +669,7 @@ function buildLevel5(){
   rect(365,165,230,28,"fort");rect(365,347,230,28,"fort");
   for(let i=0;i<8;i++)deco(250+i*65,125,i%2?"barrel":"crate",1);
   deco(690,270,"magicpot",1.3);deco(480,270,"boss",1);
-  addPickup(250,150,"ammo");addPickup(250,390,"ammo");addPickup(700,150,"ammo");addPickup(700,390,"cornbread");
+  addPickup(250,150,"ammo");addPickup(250,390,"ammo");addPickup(700,150,"ammo");addPickup(700,390,"cornbread");addPickup(480,150,"gem");
   if(upgrades.rocket)addPickup(480,395,"rocket");
   checkpoint={x:285,y:270,hp:5,ammo:Math.max(player.ammo,24)};
   boss={x:560,y:270,r:42,hp:120*diff.hp,maxHp:120*diff.hp,phase:1,state:"intro",timer:0,cooldown:1.8,faceX:-1,faceY:0,charging:false,windup:0,flashT:0};
@@ -955,10 +962,46 @@ function collectPickups(){
     if(p.type==="rocket"){rocketAmmo=Math.min(BASE_MAX_ROCKET_AMMO,rocketAmmo+2);saveMeta()}
     if(p.type==="coin"){
       coins++;beep("coin");addParticles(p.x,p.y,"#ffe14a",14,"star");saveMeta();
+    }else if(p.type==="gem"){
+      coins+=5;beep("gem");addParticles(p.x,p.y,"#37d6c4",16,"star");saveMeta();
     }else{beep("pickup");addParticles(p.x,p.y,"#ffd65e",12);}
     updateHud()
   }
   pickups=pickups.filter(p=>!p.dead)
+}
+function updatePet(dt){
+  // Tusk is invincible -- nothing in the game ever calls damagePlayer-style logic on him.
+  let target=null,best=340;
+  for(const p of pickups){
+    if(p.dead||(p.type!=="coin"&&p.type!=="gem"))continue;
+    const d=dist(pet,p);
+    if(d<best){best=d;target=p}
+  }
+  let tx,ty,speed;
+  if(target){
+    tx=target.x;ty=target.y;speed=230;
+    if(dist(pet,target)<16){
+      target.dead=true;
+      if(target.type==="coin"){coins++;beep("coin");addParticles(target.x,target.y,"#ffe14a",14,"star");saveMeta();}
+      else{coins+=5;beep("gem");addParticles(target.x,target.y,"#37d6c4",16,"star");saveMeta();}
+      updateHud();
+    }
+  }else{
+    let fx=player.dirX,fy=player.dirY;
+    if(fx||fy){pet.lastFX=fx;pet.lastFY=fy}else{fx=pet.lastFX||-1;fy=pet.lastFY||0}
+    const n=Math.hypot(fx,fy)||1;
+    tx=player.x-(fx/n)*34;ty=player.y-(fy/n)*34+8;
+    speed=195;
+  }
+  const dx=tx-pet.x,dy=ty-pet.y,d=Math.hypot(dx,dy)||1;
+  if(d>4){
+    const step=Math.min(d,speed*dt);
+    if(Math.abs(dx)>2)pet.faceX=Math.sign(dx);
+    pet.faceY=Math.abs(dy)>Math.abs(dx)?Math.sign(dy):0;
+    moveEntity(pet,dx/d*step,dy/d*step,10);
+    pet.walk+=dt*11;
+  }else pet.walk=0;
+  pickups=pickups.filter(p=>!p.dead);
 }
 function updateTutorial(){
   if(tutorial===1&&dist(player,{x:715,y:320})<300){
@@ -1034,7 +1077,7 @@ function hurtEnemy(e,damage,shot){
   e.hp-=damage;e.stun=.08;e.flashT=.1;addParticles(e.x,e.y,"#a7ff78",7);addDamageNumber(e.x,e.y-e.r-6,damage,"#c9ffb0");
   for(const o of enemies){if(o!==e&&!o.dead&&o.alertT<=0&&dist(o,e)<130)o.alertT=.4}
   if(e.hp<=0&&!e.dead){e.dead=true;score+=e.type==="grunt"?100:200;beep("enemy");addParticles(e.x,e.y,"#d5ff74",18,"star");addParticles(e.x,e.y,"#cfd8cf",7,"smoke");
-    if(!e.coinDropped){e.coinDropped=true;addPickup(e.x,e.y,"coin")}
+    if(!e.coinDropped){e.coinDropped=true;addPickup(e.x,e.y,"coin");if(Math.random()<.1*diff.pick)addPickup(e.x+14,e.y,"gem")}
     if(e.dropsKey&&!keyDropped){
       keyDropped=true;
       const kx=Math.min(e.x,700),ky=clamp(e.y,145,395);
@@ -1341,7 +1384,7 @@ function draw(){
   computePrompt();
   let sx=0,sy=0;if(shake>0&&!reduced){sx=rnd(-shake,shake);sy=rnd(-shake,shake);shake*=.88}
   X.save();X.translate(sx,sy);
-  drawGround();drawBirds();drawDecor(-1);drawGlowSources();drawObstacles(0);drawWaterDecor();drawPickups();drawSwitches();drawTargets();drawProjectiles();drawEnemies();drawBoss();drawMerchant();drawPlayer();drawObstacles(1);drawDecor(1);drawBossShout();drawEndingScene();drawWarnings();drawExplosions();drawParticles();drawFloatTexts();drawFireflies();drawVignette();
+  drawGround();drawBirds();drawDecor(-1);drawGlowSources();drawObstacles(0);drawWaterDecor();drawPickups();drawSwitches();drawTargets();drawProjectiles();drawEnemies();drawBoss();drawMerchant();drawPlayer();drawPet();drawObstacles(1);drawDecor(1);drawBossShout();drawEndingScene();drawWarnings();drawExplosions();drawParticles();drawFloatTexts();drawFireflies();drawVignette();
   X.restore();
   drawPrompt();
   if(fade>0){X.fillStyle=`rgba(6,10,8,${fade})`;X.fillRect(0,0,W,H)}
@@ -1750,7 +1793,28 @@ function drawPlayer(){
     X.restore();
   }
   if(player.spoon>0){X.strokeStyle="#ffd84f";X.lineWidth=3;X.beginPath();X.arc(player.x,player.y,24+Math.sin(time*8)*3,0,TAU);X.stroke()}
-}function drawEnemy(e){
+}
+function drawPet(){
+  X.fillStyle="rgba(0,0,0,.28)";X.beginPath();X.ellipse(pet.x,pet.y+13,15,6,0,0,TAU);X.fill();
+  const{flip}=facingOf(pet.faceX,pet.faceY);
+  X.save();X.translate(Math.round(pet.x),Math.round(pet.y+(pet.walk?Math.sin(pet.walk)*2:0)));
+  if(flip)X.scale(-1,1);
+  // Faint gold aura marks Tusk as invincible.
+  const glow=.3+.15*Math.sin(time*3);
+  X.fillStyle=`rgba(255,224,140,${glow*.5})`;X.beginPath();X.ellipse(0,1,21,14,0,0,TAU);X.fill();
+  X.fillStyle="#443b32";X.fillRect(-9,7,4,7);X.fillRect(4,7,4,7);
+  X.strokeStyle="#6b5f52";X.lineWidth=3;X.beginPath();X.moveTo(-14,-2);X.quadraticCurveTo(-21,-9,-15,-14);X.stroke();
+  pxBlock(-15,-9,26,18,"#8a7c66",2);
+  pxBlock(6,-6,14,12,"#8a7c66",2);
+  pxBlock(16,-3,8,7,"#6b5f52",1.5);
+  X.fillStyle="#f2ecd8";
+  X.beginPath();X.moveTo(20,3);X.quadraticCurveTo(27,3,25,-4);X.lineTo(21,1);X.closePath();X.fill();
+  X.fillStyle="#6b5f52";
+  X.beginPath();X.moveTo(-6,-9);X.lineTo(-2,-18);X.lineTo(2,-9);X.closePath();X.fill();
+  X.fillStyle="#1f1714";X.fillRect(8,-6,3,3);
+  X.restore();
+}
+function drawEnemy(e){
   X.fillStyle="rgba(0,0,0,.28)";X.beginPath();X.ellipse(e.x,e.y+e.r*.8,e.r*.9,e.r*.32,0,0,TAU);X.fill();
   const{flip}=facingOf(e.faceX,e.faceY);
   const col=e.type==="grunt"?"#6aaa3a":e.type==="slinger"?"#7d9f35":e.type==="bomber"?"#8a6b39":e.type==="reveler"?"#8a4fae":"#4f8d5b";
@@ -1878,6 +1942,13 @@ function drawPickups(){
       const glint=.5+.5*Math.sin(time*6+p.bob);
       X.fillStyle=`rgba(255,255,255,${glint*.6})`;X.beginPath();X.arc(-3,-4,2.4,0,TAU);X.fill();
     }
+    if(p.type==="gem"){
+      const glint=.5+.5*Math.sin(time*5+p.bob);
+      X.save();X.rotate(Math.PI/4);
+      X.fillStyle="#37d6c4";X.fillRect(-8,-8,16,16);X.strokeRect(-8,-8,16,16);
+      X.restore();
+      X.fillStyle=`rgba(255,255,255,${glint*.7})`;X.beginPath();X.arc(-3,-4,2,0,TAU);X.fill();
+    }
   X.restore()}
 }
 function drawSwitches(){for(const s of switches){X.fillStyle=s.on?"#74ff58":"#b55245";X.strokeStyle="#fff";X.lineWidth=3;X.beginPath();X.arc(s.x,s.y,s.r,0,TAU);X.fill();X.stroke();X.fillStyle="#fff";X.font="bold 15px Arial";X.textAlign="center";X.fillText(s.on?"✓":"E",s.x,s.y+5)}}
@@ -1957,7 +2028,7 @@ function update(dt){
   fade+=clamp(fadeTarget-fade,-dt*2.2,dt*2.2);
   if(!$("dialogue").classList.contains("hidden"))updateTypewriter(dt);
   if(mode!=="play"||paused||!$("dialogue").classList.contains("hidden"))return;
-  updatePlayer(dt);updateEnemies(dt);updateBoss(dt);updateProjectiles(dt);updateWarnings(dt);updateExplosions(dt);updateParticles(dt);updateFloatTexts(dt);updateLevelEvents(dt);updateEndingScene(dt);updateBirds(dt);
+  updatePlayer(dt);updatePet(dt);updateEnemies(dt);updateBoss(dt);updateProjectiles(dt);updateWarnings(dt);updateExplosions(dt);updateParticles(dt);updateFloatTexts(dt);updateLevelEvents(dt);updateEndingScene(dt);updateBirds(dt);
   if(level===1){chimneyT-=dt;if(chimneyT<=0){chimneyT=rnd(1.1,1.6);emitChimneySmoke(233,46)}}
   pickups.forEach(p=>p.bob+=dt);
 }
