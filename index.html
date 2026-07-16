@@ -190,6 +190,7 @@ const captainPortraitImg=new Image();captainPortraitImg.src="images/characters/c
 const grassTileImg=new Image();grassTileImg.src="images/tiles/grass.png";
 const treeCanopyImg=new Image();treeCanopyImg.src="images/tiles/tree-canopy.png";
 const rockSpriteImg=new Image();rockSpriteImg.src="images/tiles/rock.png";
+const logSpriteImg=new Image();logSpriteImg.src="images/tiles/log.png";
 let grassPattern=null;
 grassTileImg.onload=()=>{grassPattern=X.createPattern(grassTileImg,"repeat")};
 const screens=["title","controlsScreen","pause","gameover","victory","store"];
@@ -1612,11 +1613,17 @@ function drawDecor(layer){
       }
     }
     if(d.type==="log"){
-      X.fillStyle="#6b4a30";X.strokeStyle="#3a2718";X.lineWidth=3;
-      X.beginPath();X.roundRect(-22,-8,44,16,8);X.fill();X.stroke();
-      X.fillStyle="#8a6544";X.beginPath();X.ellipse(-20,0,7,8,0,0,TAU);X.fill();X.stroke();
-      X.strokeStyle="#4a3320";X.lineWidth=2;X.beginPath();X.arc(-20,0,4,0,TAU);X.stroke();
-      X.strokeStyle="#7a5636";for(let i=-14;i<18;i+=8){X.beginPath();X.moveTo(i,-7);X.lineTo(i+4,7);X.stroke()}
+      if(level===1&&logSpriteImg.complete&&logSpriteImg.naturalWidth){
+        X.imageSmoothingEnabled=false;
+        X.drawImage(logSpriteImg,-25,-7.5,50,15);
+        X.imageSmoothingEnabled=true;
+      }else{
+        X.fillStyle="#6b4a30";X.strokeStyle="#3a2718";X.lineWidth=3;
+        X.beginPath();X.roundRect(-22,-8,44,16,8);X.fill();X.stroke();
+        X.fillStyle="#8a6544";X.beginPath();X.ellipse(-20,0,7,8,0,0,TAU);X.fill();X.stroke();
+        X.strokeStyle="#4a3320";X.lineWidth=2;X.beginPath();X.arc(-20,0,4,0,TAU);X.stroke();
+        X.strokeStyle="#7a5636";for(let i=-14;i<18;i+=8){X.beginPath();X.moveTo(i,-7);X.lineTo(i+4,7);X.stroke()}
+      }
     }
     if(d.type==="moss"){
       X.fillStyle="rgba(90,130,60,.4)";
