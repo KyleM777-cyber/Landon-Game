@@ -25,7 +25,7 @@ button:hover,button:focus,select:focus{outline:3px solid #fff;transform:translat
 button:active{transform:translateY(2px);box-shadow:0 2px #2c4728}
 .row{display:flex;flex-wrap:wrap;justify-content:center;gap:.4em}
 .small{font-size:.86rem;opacity:.9}
-#hud{position:absolute;inset:0;pointer-events:none;z-index:5}
+#hud{position:absolute;inset:0;pointer-events:none;z-index:13}
 #topbar{display:flex;justify-content:space-between;gap:8px;padding:10px;font-weight:bold;text-shadow:2px 2px #000;font-size:clamp(12px,2vw,18px)}
 .pill{background:rgba(24,30,23,.78);border:2px solid #f3d98c;border-radius:12px;padding:6px 10px;display:inline-block}
 @keyframes hudPulse{0%{transform:scale(1)}35%{transform:scale(1.16)}100%{transform:scale(1)}}
@@ -40,16 +40,29 @@ button:active{transform:translateY(2px);box-shadow:0 2px #2c4728}
 #bossLabel{text-align:center;font-weight:bold;text-shadow:2px 2px #000}
 #bossBar{height:18px;border:3px solid #fff3bd;background:#321b18;border-radius:12px;overflow:hidden}
 #bossFill{height:100%;width:100%;background:linear-gradient(90deg,#ff5b55,#ffbb3f)}
-#dialogue{position:absolute;left:5%;right:5%;bottom:3%;min-height:150px;background:linear-gradient(100deg,rgba(35,24,24,.98),rgba(255,241,191,.98) 30%);color:#3c2519;border:5px solid #d5a55f;border-radius:18px;padding:12px 18px 12px 190px;z-index:12;box-shadow:0 10px 0 rgba(0,0,0,.4),0 0 22px rgba(255,205,105,.22);font-size:clamp(14px,2vw,20px);overflow:visible;animation:dialogueIn .22s ease-out}
-#dialogue strong{color:#8b2f29;font-size:1.18em;letter-spacing:.02em}
-#portraitCanvas{position:absolute;left:8px;bottom:0;width:170px;height:190px;image-rendering:auto;filter:drop-shadow(5px 5px 0 rgba(0,0,0,.3));animation:portraitIn .28s ease-out}
-#dialogueText{min-height:92px;padding-top:8px;text-align:left}
+/* ---- Dialogue scene: full-screen dim + two-shot portraits + bottom text panel ---- */
+#dialogue{position:absolute;inset:0;z-index:12;pointer-events:none;animation:dialogueIn .25s ease-out}
+#dialogueDim{position:absolute;inset:0;background:rgba(4,7,6,.62)}
+#dialoguePortraits{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:space-between;padding:0 1.5vw}
+.dpSlot{position:relative;height:78%;width:44%;display:flex;align-items:flex-end;justify-content:center;transition:transform .4s cubic-bezier(.22,.8,.25,1),filter .4s ease,opacity .4s ease;transform-origin:bottom center;filter:brightness(.5) saturate(.55);opacity:.8;z-index:2}
+.dpSlot.dpEmpty{display:none}
+.dpSlot.dpActive{filter:brightness(1) saturate(1.12);opacity:1;z-index:3}
+.dpSlot.dpInactive{z-index:2}
+#dpSlotLeft.dpActive{transform:scale(1.1) translateX(4%)}
+#dpSlotLeft.dpInactive{transform:scale(.82) translateX(-3%)}
+#dpSlotRight.dpActive{transform:scale(1.1) translateX(-4%)}
+#dpSlotRight.dpInactive{transform:scale(.82) translateX(3%)}
+.dpImg{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(8px 14px 10px rgba(0,0,0,.4))}
+#dialogueBox{position:absolute;left:5%;right:5%;bottom:3%;min-height:130px;background:linear-gradient(100deg,rgba(35,24,24,.98),rgba(255,241,191,.98) 30%);color:#3c2519;border:5px solid #d5a55f;border-radius:18px;padding:14px 20px;box-shadow:0 10px 0 rgba(0,0,0,.4),0 0 22px rgba(255,205,105,.22);font-size:clamp(14px,2vw,20px);z-index:4}
+#dialogueBox strong{color:#8b2f29;font-size:1.18em;letter-spacing:.02em}
+#dialogueText{min-height:60px;text-align:left;display:block}
 #dialoguePrompt{display:block;margin-top:8px;font-size:.72em;font-weight:bold;opacity:.7;text-align:right}
-@keyframes dialogueIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes portraitIn{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:translateX(0)}}
-@media(max-width:650px){#dialogue{left:2%;right:2%;padding-left:125px;min-height:125px}#portraitCanvas{width:118px;height:145px}}
+@keyframes dialogueIn{from{opacity:0}to{opacity:1}}
+@media(max-width:650px){#dialogueBox{left:2%;right:2%;padding:10px 14px;min-height:96px}.dpSlot{height:60%}}
+@media(prefers-reduced-motion:reduce){.dpSlot{transition:none}}
+body.reduceMotion .dpSlot{transition:none}
 #message{position:absolute;top:18%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.72);border:2px solid #fff1a8;border-radius:10px;padding:8px 14px;z-index:8;font-weight:bold;opacity:0;transition:opacity .2s;pointer-events:none}
-#touch{position:absolute;inset:0;z-index:9;pointer-events:none;display:none}
+#touch{position:absolute;inset:0;z-index:14;pointer-events:none;display:none}
 #dpad{position:absolute;left:18px;bottom:18px;width:150px;height:150px;pointer-events:auto}
 .touchbtn{position:absolute;width:52px;height:52px;border-radius:18px;background:rgba(32,54,42,.72);border:3px solid rgba(255,255,255,.8);color:#fff;font-weight:bold;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none}
 #up{left:49px;top:0}#down{left:49px;bottom:0}#left{left:0;top:49px}#right{right:0;top:49px}
@@ -81,7 +94,18 @@ input{accent-color:#ffd257}
 </div>
 
 <div id="message"></div>
-<div id="dialogue" class="hidden"></div>
+<div id="dialogue" class="hidden">
+  <div id="dialogueDim"></div>
+  <div id="dialoguePortraits">
+    <div class="dpSlot" id="dpSlotLeft"><img id="dpImgLeft" class="dpImg" alt=""></div>
+    <div class="dpSlot" id="dpSlotRight"><img id="dpImgRight" class="dpImg" alt=""></div>
+  </div>
+  <div id="dialogueBox">
+    <strong id="dialogueName"></strong><br>
+    <span id="dialogueText"><span id="typedText"></span></span>
+    <span id="dialoguePrompt" style="visibility:hidden">Press E</span>
+  </div>
+</div>
 
 <div id="title" class="screen">
   <h1>Landon and the Stolen Gumbo</h1>
@@ -185,6 +209,7 @@ const STORE_ITEMS=[
 let harborRoom="dock",harborExitTriggered=false;
 const merchant={x:480,y:150,r:16,faceX:0,faceY:1,idle:0};
 let mardi={ambush:false,ranged:false,shieldWave:false,bomberWave:false,finalHorde:false,finalCleared:false,gateOpened:false};
+let activePrompt=null;
 function applyUpgrades(){
   player.maxAmmo=upgrades.bandolier?BASE_MAX_AMMO*2:BASE_MAX_AMMO;
   player.ammo=Math.min(player.ammo,player.maxAmmo);
@@ -259,6 +284,10 @@ function circleRect(cx,cy,r,o){
   const nx=clamp(cx,o.x,o.x+o.w),ny=clamp(cy,o.y,o.y+o.h);
   return (cx-nx)**2+(cy-ny)**2<r*r;
 }
+// Shared proximity checks -- the SAME function drives both "should the prompt
+// show" and "does E activate it" so the two can never fall out of sync.
+function nearGate(g,pad=60){return !!g&&!g.open&&circleRect(player.x,player.y,pad,g)}
+function nearBoat(boat,pad=64){return !!boat&&circleRect(player.x,player.y,pad,boat)}
 function solidAt(x,y,r=12,ignore=null){
   for(const o of obstacles)if(o!==ignore&&o.solid!==false&&circleRect(x,y,r,o))return o;
   for(const g of gates)if(!g.open&&circleRect(x,y,r,g))return g;
@@ -338,10 +367,11 @@ $("againBtn").onclick=newGame;
 ["titleBtn1","titleBtn2","titleBtn3"].forEach(id=>$(id).onclick=returnTitle);
 $("clearBtn").onclick=()=>{storageRemove("landonGumboSave");save={};coins=0;rocketAmmo=0;upgrades={shield:false,bandolier:false,bat:false,rocket:false};activeWeapon="gun";applyUpgrades();$("saveInfo").textContent="Save cleared";};
 $("soundToggle").onchange=e=>{soundOn=e.target.checked;savePrefs()};
-$("motionToggle").onchange=e=>{reduced=e.target.checked;savePrefs()};
+$("motionToggle").onchange=e=>{reduced=e.target.checked;document.body.classList.toggle("reduceMotion",reduced);savePrefs()};
 
 function newGame(){
   setDiff();soundOn=$("soundToggle").checked;reduced=$("motionToggle").checked;
+  document.body.classList.toggle("reduceMotion",reduced);
   score=0;level=1;room=0;weapon=false;tutorial=0;checkpoint=null;fortressKey=false;started=true;paused=false;mode="play";
   player.hp=5;player.ammo=0;player.weapon=false;player.hot=0;player.spoon=0;activeWeapon="gun";
   applyUpgrades();
@@ -640,22 +670,28 @@ function buildLevel5(){
 /* =========================================================
    DIALOGUE AND INTERACTION
    ========================================================= */
-function dialogue(lines,cb=null){dialogueQueue=lines.slice();dialogueCallback=cb;nextDialogue()}
-function inferExpression(name,text){
-  const t=text.toLowerCase();
-  if(t.includes("whole bowl")||t.includes("one?"))return "surprised";
-  if(t.includes("every last drop")||t.includes("ammunition"))return name==="Grandfather"?"laughing":"worried";
-  if(t.includes("bring the gumbo home")||t.includes("belongs to the goblins"))return name==="Henry"?"angry":"determined";
-  if(t.includes("good work"))return "happy";
-  if(t.includes("spoon"))return name==="Landon"?"determined":"worried";
-  return "neutral";
+const portraitImages={Landon:landonPortraitImg,Grandfather:grandpaPortraitImg,Henry:henryPortraitImg,"Captain Kyle":captainPortraitImg};
+// The current conversation's cast, left-to-right, derived once from the
+// batch of lines passed to dialogue() -- not a separate data structure.
+let dialogueParticipants=[];
+function dialogue(lines,cb=null){
+  dialogueQueue=lines.slice();
+  dialogueCallback=cb;
+  dialogueParticipants=[];
+  for(const l of lines){
+    if(!dialogueParticipants.includes(l[0]))dialogueParticipants.push(l[0]);
+    if(dialogueParticipants.length>=2)break;
+  }
+  nextDialogue();
 }
 function nextDialogue(){
   if(!dialogueQueue.length){$("dialogue").classList.add("hidden");if(dialogueCallback){const c=dialogueCallback;dialogueCallback=null;c()}return}
-  const line=dialogueQueue.shift(),name=line[0],text=line[1],expression=line[2]||inferExpression(name,text);
-  $("dialogue").innerHTML=`<canvas id="portraitCanvas" width="220" height="250" aria-label="${name} portrait"></canvas><div id="dialogueText"><strong>${name}</strong><br><span id="typedText"></span><span id="dialoguePrompt" style="visibility:hidden">Press E</span></div>`;
+  const line=dialogueQueue.shift(),name=line[0],text=line[1];
   $("dialogue").classList.remove("hidden");
-  drawDialoguePortrait(name,expression);
+  $("dialogueName").textContent=name;
+  $("typedText").textContent="";
+  $("dialoguePrompt").style.visibility="hidden";
+  updateDialoguePortraits(name);
   typewriter={text,i:0,timer:0,rate:.026,done:false};
   if(reduced)completeTypewriter();
   beep("dialogue",.04)
@@ -678,23 +714,25 @@ function completeTypewriter(){
   const el=$("typedText");if(el)el.textContent=typewriter.text;
   const p=$("dialoguePrompt");if(p)p.style.visibility="visible";
 }
-const portraitImages={Landon:landonPortraitImg,Grandfather:grandpaPortraitImg,Henry:henryPortraitImg,"Captain Kyle":captainPortraitImg};
-function drawDialoguePortrait(name,expression){
-  const c=$("portraitCanvas");if(!c)return;const q=c.getContext("2d"),w=c.width,h=c.height;
-  q.clearRect(0,0,w,h);
-  q.save();
-  q.fillStyle="rgba(255,220,132,.16)";q.beginPath();q.arc(w/2,122,104,0,TAU);q.fill();
-  const img=portraitImages[name];
-  if(img){
-    if(img.complete&&img.naturalWidth){
-      const iw=img.naturalWidth,ih=img.naturalHeight;
-      const drawH=h+26,drawW=drawH*(iw/ih);
-      q.drawImage(img,(w-drawW)/2,-8,drawW,drawH);
-    }else{
-      img.onload=()=>drawDialoguePortrait(name,expression);
-    }
-  }
-  q.restore();
+// Reads the current speaker plus this conversation's participants (both
+// already known from dialogueParticipants/portraitImages -- the single
+// source of truth for who looks like what) and updates the two portrait
+// slots: the active speaker in front, brighter and larger; the other
+// participant behind, dimmer and smaller. A single-character conversation
+// only ever populates the left slot.
+function updateDialoguePortraits(name){
+  const [left,right]=dialogueParticipants;
+  const slotL=$("dpSlotLeft"),slotR=$("dpSlotRight"),imgL=$("dpImgLeft"),imgR=$("dpImgRight");
+  const srcFor=n=>{const img=portraitImages[n];return img&&img.src?img.src:""};
+  if(left){if(imgL.getAttribute("src")!==srcFor(left))imgL.src=srcFor(left);imgL.alt=left+" portrait";slotL.classList.remove("dpEmpty")}
+  else slotL.classList.add("dpEmpty");
+  if(right){if(imgR.getAttribute("src")!==srcFor(right))imgR.src=srcFor(right);imgR.alt=right+" portrait";slotR.classList.remove("dpEmpty")}
+  else slotR.classList.add("dpEmpty");
+  const speakerIsRight=!!right&&name===right&&name!==left;
+  slotL.classList.toggle("dpActive",!speakerIsRight);
+  slotL.classList.toggle("dpInactive",speakerIsRight);
+  slotR.classList.toggle("dpActive",!!right&&speakerIsRight);
+  slotR.classList.toggle("dpInactive",!!right&&!speakerIsRight);
 }
 function interact(){
   if(mode!=="play")return;
@@ -703,31 +741,25 @@ function interact(){
   if(level===1&&dist(player,{x:190,y:205})<75&&!weapon){msg("Grandfather is waiting to speak.");return}
   if(level===2){
     const fortressGate=gates.find(g=>g.id==="east");
-    if(fortressGate){
-      const gateCenter={x:fortressGate.x+fortressGate.w/2,y:fortressGate.y+fortressGate.h/2};
-      if(dist(player,gateCenter)<105){
-        if(fortressGate.unlocking)return;
-        if(!fortressKey){
-          if(!hordeStarted)msg("The fortress gate is locked. Defeat the goblins to find its key.");
-          else if(hordeWave>0)msg("A remaining goblin is carrying the fortress key.");
-          else msg("Collect the golden key dropped in the battle.");
-          return;
-        }
-        fortressGate.unlocking=true;
-        fortressGate.unlockTimer=1.35;
-        beep("level");
-        shake=reduced?2:8;
-        msg("The golden key turns in the lock...",1.3);
+    if(fortressGate&&nearGate(fortressGate)){
+      if(fortressGate.unlocking)return;
+      if(!fortressKey){
+        if(!hordeStarted)msg("The fortress gate is locked. Defeat the goblins to find its key.");
+        else if(hordeWave>0)msg("A remaining goblin is carrying the fortress key.");
+        else msg("Collect the golden key dropped in the battle.");
         return;
       }
+      fortressGate.unlocking=true;
+      fortressGate.unlockTimer=1.35;
+      beep("level");
+      shake=reduced?2:8;
+      msg("The golden key turns in the lock...",1.3);
+      return;
     }
   }
   if(level===3&&harborRoom==="dock"){
     const boat=obstacles.find(o=>o.type==="shrimpboat");
-    if(boat){
-      const doorX=boat.x+boat.w*.42,doorY=boat.y+boat.h*.34;
-      if(dist(player,{x:doorX,y:doorY+40})<80){enterHarborBoat();return}
-    }
+    if(boat&&nearBoat(boat)){enterHarborBoat();return}
   }
   if(level===3&&harborRoom==="interior"){
     if(mode==="play"&&dist(player,merchant)<115){talkToMerchant();return}
@@ -1235,13 +1267,73 @@ function defeatBoss(){
 }
 
 /* =========================================================
+   INTERACTION PROMPTS
+   A single computed value drawn as the very last thing on the canvas,
+   in screen space, so nothing drawn earlier (decor, particles, the
+   vignette, tall foreground objects) can cover or dim it. The same
+   nearGate()/nearBoat() checks that decide visibility here are the
+   checks interact() uses to activate, so the two can't drift apart.
+   ========================================================= */
+function computePrompt(){
+  activePrompt=null;
+  if(mode!=="play"||!$("dialogue").classList.contains("hidden"))return;
+  if(level===2){
+    const g=gates.find(g=>g.id==="east");
+    if(g&&nearGate(g)){
+      const text=g.unlocking?"UNLOCKING…":fortressKey?"[E] UNLOCK FORTRESS":"LOCKED — FIND KEY";
+      activePrompt={text,x:g.x+g.w/2,y:g.y-14};
+    }
+  }else if(level===3&&harborRoom==="dock"){
+    const boat=obstacles.find(o=>o.type==="shrimpboat");
+    if(boat&&nearBoat(boat)){
+      activePrompt={text:"[E] BOARD THE SHRIMP BOAT",x:boat.x+boat.w/2,y:boat.y+boat.h+10};
+    }
+  }else if(level===3&&harborRoom==="interior"){
+    if(dist(player,merchant)<115){
+      activePrompt={text:"Press E to speak",x:merchant.x,y:merchant.y+70};
+    }
+  }
+}
+function hudSafeTop(){
+  // Measures the HUD topbar's real on-screen size and converts it into canvas
+  // units, so the safe zone tracks the actual responsive HUD (desktop, tablet,
+  // mobile) instead of a guessed pixel constant.
+  const topbar=$("topbar"),rect=C.getBoundingClientRect();
+  if(!topbar||!rect.height)return 60;
+  const hudBottom=topbar.getBoundingClientRect().bottom-rect.top;
+  return Math.max(24,hudBottom*(H/rect.height))+10;
+}
+function drawPrompt(){
+  if(!activePrompt)return;
+  const {text,x,y}=activePrompt;
+  X.save();
+  X.font="bold 16px Arial";
+  const textW=X.measureText(text).width;
+  const panelW=Math.min(W-24,textW+38),panelH=34;
+  const px=clamp(x,panelW/2+12,W-panelW/2-12);
+  // Keep prompts clear of the HUD topbar and the bottom edge of the viewport.
+  const py=clamp(y,hudSafeTop()+panelH/2,H-14-panelH/2);
+  const pulse=.6+.4*Math.sin(time*5);
+  X.translate(Math.round(px),Math.round(py));
+  X.shadowColor="rgba(0,0,0,.65)";X.shadowBlur=10;X.shadowOffsetY=3;
+  X.fillStyle=`rgba(14,17,14,${.85+.1*pulse})`;X.strokeStyle="#ffe49a";X.lineWidth=3;
+  X.beginPath();X.roundRect(-panelW/2,-panelH/2,panelW,panelH,10);X.fill();X.stroke();
+  X.shadowColor="transparent";X.shadowBlur=0;
+  X.fillStyle="#fff4c6";X.textAlign="center";X.textBaseline="middle";
+  X.fillText(text,0,1);
+  X.restore();
+}
+
+/* =========================================================
    DRAWING
    ========================================================= */
 function draw(){
+  computePrompt();
   let sx=0,sy=0;if(shake>0&&!reduced){sx=rnd(-shake,shake);sy=rnd(-shake,shake);shake*=.88}
   X.save();X.translate(sx,sy);
   drawGround();drawBirds();drawDecor(-1);drawGlowSources();drawObstacles(0);drawWaterDecor();drawPickups();drawSwitches();drawTargets();drawProjectiles();drawEnemies();drawBoss();drawMerchant();drawPlayer();drawObstacles(1);drawDecor(1);drawBossShout();drawEndingScene();drawWarnings();drawExplosions();drawParticles();drawFloatTexts();drawFireflies();drawVignette();
   X.restore();
+  drawPrompt();
   if(fade>0){X.fillStyle=`rgba(6,10,8,${fade})`;X.fillRect(0,0,W,H)}
   if(flash>0){X.fillStyle=`rgba(255,255,255,${flash})`;X.fillRect(0,0,W,H)}
 }
@@ -1326,12 +1418,6 @@ function drawObstacles(layer){
       X.beginPath();X.arc(lx,ly-31,17,Math.PI,TAU);X.stroke();
       X.fillStyle="#27221e";X.beginPath();X.arc(lx,ly-6,8,0,TAU);X.fill();X.fillRect(lx-4,ly-5,8,20);
       X.strokeStyle=`rgba(255,216,74,${.45+.45*pulse})`;X.lineWidth=4;X.beginPath();X.arc(lx,ly,36+pulse*5,0,TAU);X.stroke();
-      if(dist(player,{x:lx,y:ly})<105&&!o.open){
-        X.fillStyle="rgba(15,18,15,.9)";X.strokeStyle="#ffe49a";X.lineWidth=3;
-        X.beginPath();X.roundRect(lx-82,o.y-44,164,34,9);X.fill();X.stroke();
-        X.fillStyle="#fff4c6";X.font="bold 16px Arial";X.textAlign="center";
-        X.fillText(fortressKey?"[E] UNLOCK FORTRESS":"LOCKED — FIND KEY",lx,o.y-21);
-      }
     }
     else if(o.type==="shrimpboat"){
       X.fillStyle="#5a3a24";X.beginPath();X.moveTo(o.x-10,o.y+o.h*.55);X.quadraticCurveTo(o.x+o.w/2,o.y+o.h+26,o.x+o.w+10,o.y+o.h*.55);X.lineTo(o.x+o.w+10,o.y+o.h*.3);X.lineTo(o.x-10,o.y+o.h*.3);X.closePath();X.fill();
@@ -1345,12 +1431,6 @@ function drawObstacles(layer){
       X.fillStyle="#d64a3a";X.beginPath();X.moveTo(o.x+22,o.y-52);X.lineTo(o.x+72,o.y-40);X.lineTo(o.x+22,o.y-28);X.closePath();X.fill();
       const doorX=o.x+o.w*.42,doorY=o.y+o.h*.34;
       X.fillStyle="#2b1c12";X.fillRect(doorX-16,doorY,32,26);X.strokeStyle="#0e0a06";X.strokeRect(doorX-16,doorY,32,26);
-      if(dist(player,{x:doorX,y:doorY+40})<80&&harborRoom==="dock"){
-        X.fillStyle="rgba(15,18,15,.9)";X.strokeStyle="#ffe49a";X.lineWidth=3;
-        X.beginPath();X.roundRect(doorX-92,doorY-38,184,32,9);X.fill();X.stroke();
-        X.fillStyle="#fff4c6";X.font="bold 15px Arial";X.textAlign="center";
-        X.fillText("[E] BOARD THE SHRIMP BOAT",doorX,doorY-16);
-      }
     }
     else if(o.type==="building"){
       const grad=X.createLinearGradient(0,o.y,0,o.y+o.h);grad.addColorStop(0,o.fac||"#8a4f5e");grad.addColorStop(1,"#5c3140");
@@ -1601,15 +1681,6 @@ function drawMerchant(){
   X.fillStyle=trim;X.fillRect(-11,-33,22,3);
   X.fillStyle="#1f1714";X.fillRect(-6,-27,3,3);X.fillRect(3,-27,3,3);
   X.restore();
-  if(dist(player,merchant)<115&&mode==="play"&&$("dialogue").classList.contains("hidden")){
-    X.save();X.translate(merchant.x,merchant.y-52);
-    const pulse=.6+.4*Math.sin(time*5);
-    X.fillStyle=`rgba(15,18,15,${.75+.15*pulse})`;X.strokeStyle="#ffe49a";X.lineWidth=3;
-    X.beginPath();X.roundRect(-78,-18,156,30,9);X.fill();X.stroke();
-    X.fillStyle="#fff4c6";X.font="bold 15px Arial";X.textAlign="center";
-    X.fillText("Press E to speak",0,2);
-    X.restore();
-  }
 }
 function drawPlayer(){
   X.fillStyle="rgba(0,0,0,.3)";X.beginPath();X.ellipse(player.x,player.y+22,16,7,0,0,TAU);X.fill();
