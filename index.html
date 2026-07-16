@@ -222,7 +222,8 @@ const henryPortraitImg=new Image();henryPortraitImg.src="data:image/png;base64,i
 const captainPortraitImg=new Image();captainPortraitImg.src="images/characters/captain-kyle.png";
 const grassFloorImg=new Image();grassFloorImg.src="images/tiles/grass-floor.png";
 const tanFloorImg=new Image();tanFloorImg.src="images/tiles/tan-floor.png";
-let grassFloorPattern=null,tanFloorPattern=null;
+const waterFloorImg=new Image();waterFloorImg.src="images/tiles/water-floor.png";
+let grassFloorPattern=null,tanFloorPattern=null,waterFloorPattern=null;
 // Beau has no bundled art asset, so his portrait is painted onto an offscreen
 // canvas at load time and fed into the same <img>-based portrait system as
 // everyone else (see initBeauPortrait(), called once portraitImages exists).
@@ -1910,8 +1911,9 @@ function drawObstacles(layer){
   for(const o of arr){
     const tall=TALL_TYPES.includes(o.type);if((layer===1)!==tall)continue;
     if(o.type==="water"){
+      if(level===1&&!waterFloorPattern&&waterFloorImg.complete&&waterFloorImg.naturalWidth)waterFloorPattern=X.createPattern(waterFloorImg,"repeat");
       X.save();X.beginPath();X.rect(o.x,o.y,o.w,o.h);X.clip();
-      X.fillStyle="#244f56";X.fillRect(o.x,o.y,o.w,o.h);
+      X.fillStyle=(level===1&&waterFloorPattern)?waterFloorPattern:"#244f56";X.fillRect(o.x,o.y,o.w,o.h);
       X.strokeStyle="rgba(210,235,232,.35)";X.lineWidth=2;
       for(let y=o.y+12;y<o.y+o.h;y+=20){
         X.beginPath();
