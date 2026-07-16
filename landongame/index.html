@@ -136,7 +136,7 @@ let difficulty="Normal",diff={hp:1,speed:1,count:1,rate:1,pick:1};
 let level=1,room=0,score=0,checkpoint=null,weapon=false,tutorial=0,transition=0;
 let keys={},touch={},projectiles=[],enemies=[],particles=[],pickups=[],obstacles=[],decor=[],warnings=[];
 let gates=[],switches=[],targets=[],fireflies=[],boss=null,dialogueQueue=[],dialogueCallback=null;
-let shake=0,flash=0,time=0,last=0,ambushTriggered=false,hordeStarted=false,hordeWave=0,fortressKey=false,keyDropped=false;
+let shake=0,flash=0,time=0,last=0,ambushTriggered=false,hordeStarted=false,hordeWave=0,fortressKey=false,keyDropped=false,endingScene=null;
 
 let save={};
 function storageGet(key){
@@ -285,7 +285,7 @@ function winGame(){
    ========================================================= */
 function clearWorld(){
   projectiles=[];enemies=[];particles=[];pickups=[];obstacles=[];decor=[];warnings=[];gates=[];switches=[];targets=[];boss=null;
-  ambushTriggered=false;hordeStarted=false;hordeWave=0;keyDropped=false;
+  ambushTriggered=false;hordeStarted=false;hordeWave=0;keyDropped=false;endingScene=null;
 }
 function rect(x,y,w,h,type="wall",solid=true,layer=0){const o={x,y,w,h,type,solid,layer};obstacles.push(o);return o}
 function deco(x,y,type,s=1,layer=0){decor.push({x,y,type,s,layer,phase:rnd(0,TAU)})}
@@ -383,7 +383,7 @@ function buildLevel2(){
   msg("Level 2: Press M for melee · Shots travel over water",3);
 }
 function buildLevel3(){
-  player.x=100;player.y=270;weapon=true;player.weapon=true;borderWorld();
+  player.x=230;player.y=270;weapon=true;player.weapon=true;borderWorld();
   rect(0,0,960,75,"water");rect(0,465,960,75,"water");
   rect(170,90,30,360,"fort");rect(760,90,30,360,"fort");rect(200,90,560,28,"fort");rect(200,422,560,28,"fort");
   rect(365,165,230,28,"fort");rect(365,347,230,28,"fort");
@@ -788,6 +788,7 @@ function defeatBoss(){
   addParticles(boss.x,boss.y,"#fff06e",70,"star");addParticles(boss.x,boss.y,"#c8c8c8",45,"smoke");
   $("bossWrap").style.display="none";
   player.celebrate=2;
+  endingScene={t:0,dur:1.6,landed:false,potX:690,potY:256,bowls:[{x:645,y:350},{x:735,y:350}]};
   setTimeout(()=>dialogue([
     ["Grandfather","Good work. You can have one bowl."],
     ["Landon","One?"],
@@ -801,7 +802,7 @@ function defeatBoss(){
 function draw(){
   let sx=0,sy=0;if(shake>0&&!reduced){sx=rnd(-shake,shake);sy=rnd(-shake,shake);shake*=.88}
   X.save();X.translate(sx,sy);
-  drawGround();drawDecor(-1);drawObstacles(0);drawPickups();drawSwitches();drawTargets();drawProjectiles();drawEnemies();drawBoss();drawPlayer();drawObstacles(1);drawDecor(1);drawWarnings();drawParticles();drawFireflies();
+  drawGround();drawDecor(-1);drawObstacles(0);drawPickups();drawSwitches();drawTargets();drawProjectiles();drawEnemies();drawBoss();drawPlayer();drawObstacles(1);drawDecor(1);drawEndingScene();drawWarnings();drawParticles();drawFireflies();
   X.restore();
   if(flash>0){X.fillStyle=`rgba(255,255,255,${flash})`;X.fillRect(0,0,W,H)}
 }
@@ -941,6 +942,31 @@ function drawBoss(){
   X.fillStyle="#d8d8d8";for(let i=-8;i<=12;i+=10){X.beginPath();X.moveTo(i,10);X.lineTo(i+4,18);X.lineTo(i+8,10);X.fill()}
   X.restore()
 }
+function drawEndingScene(){
+  if(!endingScene)return;
+  const s=endingScene;
+  for(const b of s.bowls){
+    X.save();X.translate(b.x,b.y);
+    X.fillStyle="#9aa0a3";X.strokeStyle="#4a4e50";X.lineWidth=4;
+    X.beginPath();X.roundRect(-38,-22,76,46,11);X.fill();X.stroke();
+    X.fillStyle="#7d8386";X.beginPath();X.ellipse(0,-15,29,9,0,0,TAU);X.fill();
+    X.restore();
+  }
+  const t=clamp(s.t/s.dur,0,1);
+  const bowl=s.bowls[0],startX=s.potX,startY=s.potY,endX=bowl.x,endY=bowl.y-16,arcH=115;
+  const x=startX+(endX-startX)*t,y=startY+(endY-startY)*t-Math.sin(Math.PI*t)*arcH;
+  drawShrimp(x,y,t*TAU*1.6,t>=1?.85:1);
+}
+function drawShrimp(x,y,rot,scale){
+  X.save();X.translate(x,y);X.rotate(rot);X.scale(scale,scale);
+  X.strokeStyle="#8a3a24";X.lineWidth=3;X.lineJoin="round";
+  X.fillStyle="#f4926b";
+  X.beginPath();X.moveTo(-16,4);X.quadraticCurveTo(-6,-17,14,-8);X.quadraticCurveTo(21,-3,16,2);X.quadraticCurveTo(2,11,-16,4);X.closePath();X.fill();X.stroke();
+  X.fillStyle="#fbead9";for(let i=0;i<3;i++){X.beginPath();X.ellipse(-9+i*7,3,3,2,0,0,TAU);X.fill()}
+  X.fillStyle="#f4926b";X.beginPath();X.moveTo(14,-8);X.lineTo(25,-15);X.lineTo(22,-2);X.lineTo(27,3);X.lineTo(14,2);X.closePath();X.fill();X.stroke();
+  X.fillStyle="#3a1c12";X.beginPath();X.arc(10,-7,1.6,0,TAU);X.fill();
+  X.restore();
+}
 function drawProjectiles(){for(const p of projectiles){X.fillStyle=p.color;X.shadowColor=p.color;X.shadowBlur=8;X.beginPath();X.arc(p.x,p.y,p.r,0,TAU);X.fill();X.shadowBlur=0}}
 function drawPickups(){
   for(const p of pickups){const y=p.y+Math.sin(time*4+p.bob)*4;X.save();X.translate(p.x,y);X.strokeStyle="#211a16";X.lineWidth=3;
@@ -977,8 +1003,16 @@ function updateHud(){
 }
 function update(dt){
   time+=dt;if(flash>0)flash-=dt;if(mode!=="play"||paused||!$("dialogue").classList.contains("hidden"))return;
-  updatePlayer(dt);updateEnemies(dt);updateBoss(dt);updateProjectiles(dt);updateWarnings(dt);updateParticles(dt);updateLevelEvents(dt);
+  updatePlayer(dt);updateEnemies(dt);updateBoss(dt);updateProjectiles(dt);updateWarnings(dt);updateParticles(dt);updateLevelEvents(dt);updateEndingScene(dt);
   pickups.forEach(p=>p.bob+=dt);
+}
+function updateEndingScene(dt){
+  if(!endingScene||endingScene.t>=endingScene.dur)return;
+  endingScene.t+=dt;
+  if(endingScene.t>=endingScene.dur){
+    endingScene.t=endingScene.dur;endingScene.landed=true;
+    addParticles(endingScene.bowls[0].x,endingScene.bowls[0].y-18,"#ffe7c2",12,"spark");beep("pickup",.05);
+  }
 }
 function loop(t){
   const dt=Math.min(.033,(t-last)/1000||0);last=t;
