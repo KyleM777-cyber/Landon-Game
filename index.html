@@ -203,7 +203,8 @@ let hudPrev={hp:5,ammo:0,score:0,coins:0};
    COINS, UPGRADES & WEAPONS (persistent meta-progression)
    ========================================================= */
 const BASE_MAX_AMMO=30,BASE_MAX_ROCKET_AMMO=6;
-let coins=0,rocketAmmo=0,activeWeapon="gun";
+const STARTING_COINS=10;
+let coins=STARTING_COINS,rocketAmmo=0,activeWeapon="gun";
 let upgrades={shield:false,bandolier:false,bat:false,rocket:false};
 const STORE_ITEMS=[
   {key:"shield",name:"Bayou Shield",price:15,desc:"Blocks stones, veggies, and jars thrown at Landon's front."},
@@ -251,8 +252,8 @@ testMode=!!save.testMode;
 // it now just follows the OS-level accessibility preference automatically.
 reduced=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 document.body.classList.toggle("reduceMotion",reduced);
-$("saveInfo").textContent=`High Score: ${save.highScore||0} · Furthest Level: ${save.furthest||1} · Coins: ${save.coins||0}`;
-coins=save.coins||0;
+$("saveInfo").textContent=`High Score: ${save.highScore||0} · Furthest Level: ${save.furthest||1} · Coins: ${typeof save.coins==="number"?save.coins:STARTING_COINS}`;
+coins=typeof save.coins==="number"?save.coins:STARTING_COINS;
 rocketAmmo=save.rocketAmmo||0;
 upgrades={shield:false,bandolier:false,bat:false,rocket:false,...(save.upgrades||{})};
 
@@ -374,7 +375,7 @@ $("restartBtn").onclick=restartLevel;
 $("retryBtn").onclick=restartLevel;
 $("againBtn").onclick=newGame;
 ["titleBtn1","titleBtn2","titleBtn3"].forEach(id=>$(id).onclick=returnTitle);
-$("clearBtn").onclick=()=>{storageRemove("landonGumboSave");save={};coins=0;rocketAmmo=0;upgrades={shield:false,bandolier:false,bat:false,rocket:false};activeWeapon="gun";applyUpgrades();$("saveInfo").textContent="Save cleared";};
+$("clearBtn").onclick=()=>{storageRemove("landonGumboSave");save={};coins=STARTING_COINS;rocketAmmo=0;upgrades={shield:false,bandolier:false,bat:false,rocket:false};activeWeapon="gun";applyUpgrades();$("saveInfo").textContent="Save cleared";};
 $("soundToggle").onchange=e=>{soundOn=e.target.checked;savePrefs()};
 $("testModeToggle").onchange=e=>{testMode=e.target.checked;savePrefs()};
 
