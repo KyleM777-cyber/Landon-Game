@@ -191,6 +191,10 @@ const grassTileImg=new Image();grassTileImg.src="images/tiles/grass.png";
 const treeCanopyImg=new Image();treeCanopyImg.src="images/tiles/tree-canopy.png";
 const rockSpriteImg=new Image();rockSpriteImg.src="images/tiles/rock.png";
 const logSpriteImg=new Image();logSpriteImg.src="images/tiles/log.png";
+const houseSpriteImg=new Image();houseSpriteImg.src="images/tiles/house.png";
+const pathTileImg=new Image();pathTileImg.src="images/tiles/path.png";
+let pathPattern=null;
+pathTileImg.onload=()=>{pathPattern=X.createPattern(pathTileImg,"repeat")};
 let grassPattern=null;
 grassTileImg.onload=()=>{grassPattern=X.createPattern(grassTileImg,"repeat")};
 const screens=["title","controlsScreen","pause","gameover","victory","store"];
@@ -469,8 +473,8 @@ function buildLevel1(){
   rect(0,0,W,18,"water");rect(0,H-18,W,18,"water");rect(0,0,18,H,"water");rect(W-18,0,18,H,"water");
 
   // Cabin and porch occupy one corner instead of blocking the middle of the map.
-  rect(52,88,250,132,"cabin");
-  rect(72,216,210,28,"porch");
+  rect(52,88,176,132,"cabin");
+  rect(72,216,136,28,"porch");
 
   // Trees are spaced around the edges with wide lanes between them.
   rect(405,52,62,118,"tree");
@@ -1426,7 +1430,7 @@ function drawGround(){
     const grad=X.createLinearGradient(0,0,0,H);grad.addColorStop(0,topCol);grad.addColorStop(1,botCol);X.fillStyle=grad;X.fillRect(0,0,W,H);
   }
   if(level<3||level===5){
-    X.fillStyle=pathCol;X.beginPath();X.moveTo(0,245);X.bezierCurveTo(220,205,330,315,520,255);X.bezierCurveTo(690,205,760,315,960,250);X.lineTo(960,360);X.bezierCurveTo(700,400,430,340,0,390);X.closePath();X.fill();
+    X.fillStyle=(level===1&&pathPattern)?pathPattern:pathCol;X.beginPath();X.moveTo(0,245);X.bezierCurveTo(220,205,330,315,520,255);X.bezierCurveTo(690,205,760,315,960,250);X.lineTo(960,360);X.bezierCurveTo(700,400,430,340,0,390);X.closePath();X.fill();
   }
   if(level===2){X.fillStyle="rgba(210,235,224,.08)";for(let i=0;i<10;i++){X.beginPath();X.ellipse((i*113+time*12)%1040-40,120+i%3*130,95,14,0,0,TAU);X.fill()}}
   if(level===5){X.strokeStyle="rgba(174,255,92,.28)";X.lineWidth=3;for(let i=0;i<12;i++){X.beginPath();X.moveTo(190+i*50,110);X.lineTo(210+i*50,430);X.stroke()}}
@@ -1468,7 +1472,18 @@ function drawObstacles(layer){
       X.restore();
     }
     else if(o.type==="tree"){drawTree(o)}
-    else if(o.type==="cabin"){X.fillStyle="#6a4127";X.fillRect(o.x,o.y+35,o.w,o.h-35);X.fillStyle="#9b6238";for(let y=o.y+48;y<o.y+o.h;y+=18)X.fillRect(o.x,y,o.w,4);X.fillStyle="#3b2a22";X.beginPath();X.moveTo(o.x-18,o.y+42);X.lineTo(o.x+o.w/2,o.y-22);X.lineTo(o.x+o.w+18,o.y+42);X.closePath();X.fill();X.fillStyle="#301d14";X.fillRect(o.x+o.w*.45,o.y+o.h-52,38,52);X.fillStyle="#5b4a3d";X.fillRect(o.x+o.w*.68,o.y-40,20,50);X.fillStyle="#3f332a";X.fillRect(o.x+o.w*.68-3,o.y-42,26,7)}
+    else if(o.type==="cabin"){
+      if(level===1&&houseSpriteImg.complete&&houseSpriteImg.naturalWidth){
+        const hw=o.w,hh=hw*(houseSpriteImg.naturalHeight/houseSpriteImg.naturalWidth);
+        X.imageSmoothingEnabled=false;
+        X.drawImage(houseSpriteImg,o.x,o.y+o.h-hh,hw,hh);
+        X.imageSmoothingEnabled=true;
+        X.fillStyle="#5b4a3d";X.fillRect(o.x+o.w*.6,-2,16,38);
+        X.fillStyle="#3f332a";X.fillRect(o.x+o.w*.6-3,-4,22,6);
+      }else{
+        X.fillStyle="#6a4127";X.fillRect(o.x,o.y+35,o.w,o.h-35);X.fillStyle="#9b6238";for(let y=o.y+48;y<o.y+o.h;y+=18)X.fillRect(o.x,y,o.w,4);X.fillStyle="#3b2a22";X.beginPath();X.moveTo(o.x-18,o.y+42);X.lineTo(o.x+o.w/2,o.y-22);X.lineTo(o.x+o.w+18,o.y+42);X.closePath();X.fill();X.fillStyle="#301d14";X.fillRect(o.x+o.w*.45,o.y+o.h-52,38,52);X.fillStyle="#5b4a3d";X.fillRect(o.x+o.w*.68,o.y-40,20,50);X.fillStyle="#3f332a";X.fillRect(o.x+o.w*.68-3,o.y-42,26,7)
+      }
+    }
     else if(o.type==="porch"||o.type==="bridge"){X.fillStyle="#8c623e";X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle="#3d2a1d";for(let x=o.x+8;x<o.x+o.w;x+=18){X.beginPath();X.moveTo(x,o.y);X.lineTo(x,o.y+o.h);X.stroke()}}
     else if(o.type==="fence"){X.fillStyle="#7a5030";X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle="#c38a54";X.strokeRect(o.x,o.y,o.w,o.h)}
     else if(o.type==="fort"){X.fillStyle="#574630";X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle="#97845a";X.lineWidth=4;for(let x=o.x;x<o.x+o.w;x+=18){X.beginPath();X.moveTo(x,o.y);X.lineTo(x,o.y+o.h);X.stroke()}}
@@ -2068,7 +2083,7 @@ function update(dt){
   if(!$("dialogue").classList.contains("hidden"))updateTypewriter(dt);
   if(mode!=="play"||paused||!$("dialogue").classList.contains("hidden"))return;
   updatePlayer(dt);updatePet(dt);updateEnemies(dt);updateBoss(dt);updateProjectiles(dt);updateWarnings(dt);updateExplosions(dt);updateParticles(dt);updateFloatTexts(dt);updateLevelEvents(dt);updateEndingScene(dt);updateBirds(dt);
-  if(level===1){chimneyT-=dt;if(chimneyT<=0){chimneyT=rnd(1.1,1.6);emitChimneySmoke(233,46)}}
+  if(level===1){chimneyT-=dt;if(chimneyT<=0){chimneyT=rnd(1.1,1.6);emitChimneySmoke(166,-4)}}
   pickups.forEach(p=>p.bob+=dt);
 }
 function updateEndingScene(dt){
