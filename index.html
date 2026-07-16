@@ -430,7 +430,8 @@ function spawn(type,x,y){
   }
   const e={type,x,y,r:b.r,hp:Math.ceil(b.hp*diff.hp),maxHp:Math.ceil(b.hp*diff.hp),speed:b.s*diff.speed,
   cooldown:rnd(.4,1.2),attack:0,warning:0,stun:0,dead:false,faceX:1,faceY:0,shieldOpen:0,flashT:0,alertT:0,
-  jitterX:rnd(-1,1),jitterY:rnd(-1,1),jitterT:rnd(.3,.8),danceT:type==="reveler"?rnd(.5,1.4):0,festive:level===4};
+  jitterX:rnd(-1,1),jitterY:rnd(-1,1),jitterT:rnd(.3,.8),danceT:type==="reveler"?rnd(.5,1.4):0,festive:level===4,
+  festiveColor:["#7a4fae","#2fae5c","#e8b840"][Math.floor(rnd(0,3))]};
   enemies.push(e);return e;
 }
 function borderWorld(){
@@ -1178,7 +1179,7 @@ function updateLevelEvents(dt){
     mardi.confettiT=(mardi.confettiT||0)-dt;
     if(mardi.confettiT<=0){mardi.confettiT=rnd(.05,.14);spawnConfetti();}
     const gate=gates.find(g=>g.id==="mardiExit");
-    if(gate&&gate.open&&player.x>gate.x+gate.w+10){
+    if(gate&&gate.open&&player.x>gate.x+gate.w-10){
       msg("Entering Henry's Gumbo Fortress...",1.2);
       levelCompleteSoon(5);
     }
@@ -1750,8 +1751,17 @@ function drawPlayer(){
   X.beginPath();X.moveTo(-w*.4,-h*.5);X.lineTo(-w*.85,-h*.95);X.lineTo(-w*.55,-h*.15);X.closePath();X.fill();
   X.beginPath();X.moveTo(w*.4,-h*.5);X.lineTo(w*.85,-h*.95);X.lineTo(w*.55,-h*.15);X.closePath();X.fill();
   pxBlock(-w/2,-h/2,w,h,col,2);
-  X.fillStyle="#fff";X.fillRect(w*.08,-h*.28,w*.32,h*.24);
-  X.fillStyle="#221b17";X.fillRect(w*.22,-h*.18,w*.12,h*.12);
+  // Two symmetric eyes so a face reads clearly no matter which way the goblin faces.
+  const eyeY=-h*.30,eyeW=w*.26,eyeH=h*.22,eyeGap=w*.06;
+  const lEyeX=-eyeGap-eyeW,rEyeX=eyeGap;
+  const pupilOff=clamp(e.faceY*2,-eyeH*.18,eyeH*.18);
+  X.fillStyle="#fff";X.fillRect(lEyeX,eyeY,eyeW,eyeH);X.fillRect(rEyeX,eyeY,eyeW,eyeH);
+  X.fillStyle="#221b17";
+  X.fillRect(lEyeX+eyeW*.3,eyeY+eyeH*.24+pupilOff,eyeW*.42,eyeH*.52);
+  X.fillRect(rEyeX+eyeW*.3,eyeY+eyeH*.24+pupilOff,eyeW*.42,eyeH*.52);
+  X.strokeStyle="#2c2117";X.lineWidth=Math.max(1.5,w*.05);X.lineCap="round";
+  X.beginPath();X.moveTo(lEyeX-1,eyeY-1);X.lineTo(lEyeX+eyeW+1,eyeY-eyeH*.4);X.stroke();
+  X.beginPath();X.moveTo(rEyeX-1,eyeY-eyeH*.4);X.lineTo(rEyeX+eyeW+1,eyeY-1);X.stroke();
   X.fillStyle="#5a3f2c";X.fillRect(-w*.22,h*.18,w*.44,h*.2);
   X.fillStyle="#e8e4d8";X.fillRect(-w*.14,h*.18,w*.1,h*.12);X.fillRect(w*.05,h*.18,w*.1,h*.12);
   if(e.type==="slinger"){X.fillStyle="#5a351f";X.fillRect(w*.32,h*.02,9,9)}
@@ -1763,9 +1773,9 @@ function drawPlayer(){
     X.strokeStyle="#ffd84a";X.lineWidth=3;X.beginPath();X.arc(0,-h*.1,w*.38,.15,Math.PI-.15);X.stroke();
   }
   if(e.festive&&(e.type==="grunt"||e.type==="slinger"||e.type==="bomber"||e.type==="shield")){
-    X.fillStyle=["#7a4fae","#2fae5c","#e8b840"][Math.floor(e.x)%3];
-    X.beginPath();X.rect(-w*.3,-h*.34,w*.6,6);X.fill();
-    X.strokeStyle="#ffd84a";X.lineWidth=2;X.beginPath();X.arc(0,h*.04,w*.32,.2,Math.PI-.2);X.stroke();
+    // Chest bandana sits in the neutral gap between eyes and mustache so it never masks the face.
+    X.fillStyle=e.festiveColor;X.fillRect(-w*.16,0,w*.32,h*.08);
+    X.strokeStyle="#ffd84a";X.lineWidth=1.5;X.strokeRect(-w*.16,0,w*.32,h*.08);
   }
   if(e.flashT>0){X.globalAlpha=clamp(e.flashT/.1,0,1)*.75;X.fillStyle="#fff";X.fillRect(-w/2,-h/2,w,h);X.globalAlpha=1}
   X.restore();
