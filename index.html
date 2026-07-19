@@ -121,7 +121,7 @@ input{accent-color:#ffd257}
   <div id="dialogueBox">
     <strong id="dialogueName"></strong><br>
     <span id="dialogueText"><span id="typedText"></span></span>
-    <span id="dialoguePrompt" style="visibility:hidden">Press E</span>
+    <span id="dialoguePrompt" style="visibility:hidden">Press E or Space</span>
   </div>
 </div>
 
@@ -406,6 +406,7 @@ applyUpgrades();
 addEventListener("keydown",e=>{
   const k=e.key.toLowerCase();keys[k]=true;
   if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k))e.preventDefault();
+  if((k===" "||k==="enter")&&mode==="play"&&!e.repeat)advanceDialogueIfShowing();
   if((k==="p"||k==="escape")&&started&&mode==="play")togglePause();
   else if((k==="p"||k==="escape")&&mode==="pause")togglePause();
   else if(k==="escape"&&mode==="store")closeStore();
@@ -864,10 +865,15 @@ function updateDialoguePortraits(name){
   slotR.classList.toggle("dpActive",!!right&&speakerIsRight);
   slotR.classList.toggle("dpInactive",!!right&&!speakerIsRight);
 }
+function advanceDialogueIfShowing(){
+  if($("dialogue").classList.contains("hidden"))return false;
+  if(!typewriter.done)completeTypewriter();else nextDialogue();
+  return true;
+}
 function interact(){
   if(mode!=="play")return;
   player.interactAnim=.28;
-  if(!$("dialogue").classList.contains("hidden")){if(!typewriter.done){completeTypewriter()}else{nextDialogue()}return}
+  if(advanceDialogueIfShowing())return;
   if(level===1&&dist(player,{x:190,y:205})<75&&!weapon){msg("Grandfather is waiting to speak.");return}
   if(level===2){
     const fortressGate=gates.find(g=>g.id==="east");
